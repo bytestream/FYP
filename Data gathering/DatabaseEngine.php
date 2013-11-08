@@ -7,7 +7,7 @@
  * @copyright  Copyright (c) 2013 Kieran Brahney
  * @version    1.0.0
  */
-class DatabasEngine extends PDO {
+class DatabaseEngine extends PDO {
 
 	/**
 	 * PDO connection object
@@ -52,7 +52,8 @@ class DatabasEngine extends PDO {
 			);
 
 			// Initialise the connection
-			$dbh = parent::__construct($dsn, $user, $pass, $options);
+			parent::__construct($dsn, $user, $passwd, $opts);
+			$this->dbh = $this;
 		} catch (PDOException $e) {
 			die("Error connecting to DB.");
 		}
@@ -68,23 +69,23 @@ class DatabasEngine extends PDO {
 	public function query($query, $bind = array(), $supressError = false) {
 		// Perform the query and get the time
 		$start_time = microtime(true);
-		// Prepare the query
-		$this->stmt = $this->dbh->prepare($query);
-		// Send the placeholder data and execute the query
-		if (count($bind) == 0)
-			$this->_result = $this->stmt->execute();
-		else
-			$this->_result = $this->stmt->execute($bind);
+		try {
+			// Prepare the query
+			$this->stmt = $this->dbh->prepare($query);
+			// Send the placeholder data and execute the query
+			if (count($bind) == 0)
+				$this->_result = $this->stmt->execute();
+			else
+				$this->_result = $this->stmt->execute($bind);
+		} catch (PDOException $e) {
+			if (!$this->_result && !$supressError)
+				echo $e->getMessage();
+		}
 		$end_time = microtime(true);
 		$total_time = substr(($end_time - $start_time), 0, 8);
 
 		// Build the query for logging
-		$this->_queries = $this->buildQuery($query, $bind) . " - " . $total_time;
-
-		if (!$result && !$supressError) {
-			echo "<b>MySQL Query Error:</b> $query. <b>
-					MySQL Said:</b> " . mysql_error(($con? $con : $this->connection)) . "<br /><br />" ;
-		}
+		$this->_queries = $this->printQueryAsString($query, $bind) . " - " . $total_time;
 
 		// Return PDOStatement for execution with $res->fetchAll() etc
 		return $this->stmt;
@@ -132,7 +133,9 @@ class DatabasEngine extends PDO {
 	 * @param  array  $bind     Array of bind params (0 => 'Hey', ':name' => 'Kieran')
 	 * @return string           Complete array with bind params substitued for values
 	 */
-	private function buildQuery($rawQuery, $bind = array()) {
+	private function printQueryAsString($rawQuery, $bind = array()) {
+		$regex = $replacements = array();
+
 		foreach ($bind as $key => $value) {
 			if (is_string($key)) 
 				$regex[] = '/:' . $key . '/';

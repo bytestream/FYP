@@ -42,6 +42,24 @@ class TwitterEngine extends tmhOAuth {
 	private $verboseOutput = array();
 
 	/**
+	 * Ensure API credentials are valid
+	 * @var boolean
+	 */
+	private $validCredentials = false;
+
+	/**
+	 * Reference to the UK WOEID value
+	 * @var integer
+	 */
+	public static $UK_WOEID = 23424975;
+
+	/**
+	 * Reference to the USA WOEID value
+	 * @var integer
+	 */
+	public static $USA_WOEID = 23424977;
+
+	/**
 	 * Initialise tmhOAuth with the API authentication details
 	 * @param array $config Array consisting of the following keys:
 	 *                      consumer_key, consumer_secret, token (user_token),
@@ -62,6 +80,9 @@ class TwitterEngine extends tmhOAuth {
 
 		// Initialise tmhOAuth
 	    parent::__construct($this->config);
+
+	    // Verify credentials
+	    $this->validCredentials = $this->isValidAPIUser();
 	}
 
 	/**
@@ -72,7 +93,7 @@ class TwitterEngine extends tmhOAuth {
 	 * @return mixed              JSON decoded array on success or FALSE on error
 	 */
 	public function getUserTimeline($user_id = null, $numTweets = 20) {
-		if (isset($user_id) && $this->isValidAPIUser()) {
+		if (isset($user_id) && $this->validCredentials === TRUE) {
 
 			$res = $this->request(
 				'GET', 
@@ -100,7 +121,7 @@ class TwitterEngine extends tmhOAuth {
 	 * @return mixed                 JSON decoded array on success or FALSE on error
 	 */
 	public function getUserFollowers($user_id = null, $numFollowers = 5000) {
-		if (isset($user_id) && $this->isValidAPIUser()) {
+		if (isset($user_id) && $this->validCredentials === TRUE) {
 
 			$res = $this->request(
 				'GET',
@@ -128,7 +149,7 @@ class TwitterEngine extends tmhOAuth {
 	 * @return mixed               JSON decoded array on success or FALSE on error
 	 */
 	public function getUserFriends($user_id = null, $numFriends = 5000) {
-		if (isset($user_id) && $this->isValidAPIUser()) {
+		if (isset($user_id) && $this->validCredentials === TRUE) {
 
 			$res = $this->request(
 				'GET',
@@ -155,7 +176,7 @@ class TwitterEngine extends tmhOAuth {
 	 * @return mixed JSON decoded array on success or FALSE on error
 	 */
 	public function getPublicTimeline() {
-		if ($this->isValidAPIUser()) {
+		if ($this->validCredentials === TRUE) {
 
 			$res = $this->request(
 				'GET',
@@ -165,7 +186,6 @@ class TwitterEngine extends tmhOAuth {
 			return $this->returnAPIResult($res, $this->response);
 		} else {
 
-			var_dump("Unable to connect to API");
 			$this->logError("Unable to connect to API.");
 			return false;
 		}
@@ -173,11 +193,11 @@ class TwitterEngine extends tmhOAuth {
 
 	/**
 	 * Returns the top 10 trending topics for a specific WOEID, if trending information is available for it.
-	 * @param  integer $WOEID [description]
+	 * @param  integer $WOEID Where on earth identifier
 	 * @return mixed          JSON decoded array on success or FALSE on error
 	 */
 	public function getTrendingTopics($WOEID = 1) {
-		if ($this->isValidAPIUser()) {
+		if ($this->validCredentials === TRUE) {
 
 			$res = $this->request(
 				'GET',
@@ -196,6 +216,34 @@ class TwitterEngine extends tmhOAuth {
 	}
 
 	/**
+	 * Search the Twitter API under a given criteria, defaults to english only tweets
+	 * @see    https://dev.twitter.com/docs/api/1.1/get/search/tweets
+	 * @param  array $query Array of criteria as per twitter API parameters
+	 * @return mixed        JSON decoed array on success or FALSE on error
+	 */
+	public function search($query = null) {
+		if (is_array($query) && $this->validCredentials === TRUE) {
+
+			$res = $this->request(
+				'GET',
+				$this->url('1.1/search/tweets'),
+				array_merge(
+					array(
+						'lang'		=> 'en'
+					),
+					$query
+				)
+			);
+
+			return $this->returnAPIResult($res, $this->response);
+		} else {
+
+			$this->logError("Unable to connect to API or no search criteria provided.");
+			return false;
+		}
+	}
+
+	/**
 	 * Enable or disable verbose output from cURL requests
 	 * @param boolean $enable TRUE to enable, FALSE to disable
 	 */
@@ -208,11 +256,14 @@ class TwitterEngine extends tmhOAuth {
 
 	/**
 	 * Return verbose output of each API call
+	 * @param  int $index Index to access in the array
 	 * @return array Nested array of each API call
 	 */
-	public function getVerboseOutput() {
-
-		return $this->verboseOutput;
+	public function getVerboseOutput($index = null) {
+		if (isset($index) && $index < count($this->verboseOutput))
+			return $this->verboseOutput[$index];
+		else
+			return $this->verboseOutput;
 	}
 
 	/**
@@ -254,13 +305,14 @@ class TwitterEngine extends tmhOAuth {
 	private function logError($error = null) {
 		if (isset($error)) {
 
+			// cURL error
 			if (isset($error['error']) && isset($error['errno'])) {
 
 				// In some cases this is empty and the error is in the response
 				if (empty($error['error'])) {
 
 					$json = json_decode($error['response'], true);
-					$error['error'] = $json['errors']['message'];
+					$error['error'] = $json['errors'][0]['message'];
 				}
 
 				// Log error
@@ -271,7 +323,7 @@ class TwitterEngine extends tmhOAuth {
 				unset($this->response['errno']);
 			} else {
 
-				$this->errors[] = $error;
+				$this->errors[] = $error . " - " . time();
 			}
 
 			return true;
@@ -314,7 +366,17 @@ class TwitterEngine extends tmhOAuth {
 			if (!empty($response['response'])) {
 
 				// Decode the result
-				return json_decode($response['response'], true);
+				$json = json_decode($response['response'], true);
+
+				// API returned an error
+				if (isset($json['errors'][0]['message'])) {
+
+					$this->logError($response);
+					return false;
+				} 
+
+				// Return the data
+				return $json;
 			} else {
 
 				$this->logError($response);
