@@ -44,15 +44,22 @@
 		if (is_array($array)) {
 			if (isset($array['text']) && isset($array['created_at']) && 
 				isset($array['retweeted']) && isset($array['retweet_count']) &&
-				isset($array['user']['id_str'])
+				isset($array['user']['id_str']) && isset($array['source'])
 			) {
 
+				$source = $array['source'];
+				if (preg_match("/<.*?>(.*?)<\/.*?>/", $array['source'], $match)) {
+					$source = $match[1];
+				}
+
 				// Format and return the data
+				// tweet_id, user_id, tweet, creation_date, source, retweeted, retweet_count
 				return array(
 					"tweet_id"		=> (int) $array['id_str'],
+					"user_id"	 	=> (int) $array['user']['id_str'],
 					"tweet"		 	=> $array['text'],
 					"created_at" 	=> convertToDateTime($array['created_at']),
-					"user_id"	 	=> (int) $array['user']['id_str'],
+					"source"		=> $source,
 					"retweeted"  	=> (int) $array['retweeted'],
 					"retweet_count"	=> (int) $array['retweet_count']
 				);

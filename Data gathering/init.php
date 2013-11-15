@@ -3,6 +3,9 @@
 	// Disable timeout
 	set_time_limit(0);
 
+	// Disable memory limit
+	ini_set('memory_limit', '-1');
+
 	// Include the required files
 	require_once('TwitterEngine.php');
 	require_once('DatabaseEngine.php');
@@ -13,8 +16,6 @@
 		array(
 			'consumer_key' 		=> '6jwZPWYF2msLozMx9zvsQ',
             'consumer_secret' 	=> 'Q9Y53UCMc4nnlB9ReTiX8LDCZZ7BODiPi8gZkAJe0s',
-            'token' 			=> '621068140-dF8VbcrPc4elrobv9dICkNMAPLQtNtPt8Bt2d89v',
-            'secret' 			=> 'ThLnRIyNW15ISf2PhWIwCrOnZuOUgMW6e04h14JtLgxug',
 			'curl_timeout' 		=> 30
 		)
 	);

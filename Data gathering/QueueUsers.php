@@ -48,8 +48,8 @@
 						// Add the tweet to the DB
 						if (($tweet_data = getTweetData($tweet)) !== FALSE) {
 							$DatabaseEngine->query(
-								"INSERT IGNORE INTO `tweets` (tweet_id, user_id, tweet, creation_date, retweeted, retweet_count)
-								 VALUES (:tweet_id, :user_id, :tweet, :created_at, :retweeted, :retweet_count);",
+								"INSERT IGNORE INTO `tweets` (tweet_id, user_id, tweet, creation_date, source, retweeted, retweet_count)
+								 VALUES (:tweet_id, :user_id, :tweet, :created_at, :source, :retweeted, :retweet_count);",
 								 $tweet_data
 							);
 						} else {

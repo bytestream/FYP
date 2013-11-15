@@ -84,6 +84,12 @@ class DatabaseEngine extends PDO {
 		$end_time = microtime(true);
 		$total_time = substr(($end_time - $start_time), 0, 8);
 
+		// Error
+		if (!$this->_result && !$supressError) {
+			$error = $this->stmt->errorInfo();
+			echo $error[2];
+		}
+
 		// Build the query for logging
 		$this->_queries = $this->printQueryAsString($query, $bind) . " - " . $total_time;
 

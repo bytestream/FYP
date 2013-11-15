@@ -1,5 +1,6 @@
 <?php
 
+chdir(dirname(__FILE__));
 if (file_exists("./includes/tmhOAuth/tmhOAuth.php")) {
 
 	// Include the OAuth library
@@ -20,6 +21,19 @@ if (file_exists("./includes/tmhOAuth/tmhOAuth.php")) {
  * @version    1.0.0
  */
 class TwitterEngine extends tmhOAuth {
+
+	/**
+	 * WOEIDs
+	 * @see  http://woeid.rosselliot.co.nz/
+	 */
+	const UK_WOEID  = 23424975;
+	const USA_WOEID = 23424977;
+
+	/**
+	 * Type of API authentication
+	 */
+	const USER_AUTH = 1;
+	const APP_AUTH  = 2;
 
 	/**
 	 * Array of all the errors captured during script execution
@@ -48,18 +62,6 @@ class TwitterEngine extends tmhOAuth {
 	private $validCredentials = false;
 
 	/**
-	 * Reference to the UK WOEID value
-	 * @var integer
-	 */
-	public static $UK_WOEID = 23424975;
-
-	/**
-	 * Reference to the USA WOEID value
-	 * @var integer
-	 */
-	public static $USA_WOEID = 23424977;
-
-	/**
 	 * Initialise tmhOAuth with the API authentication details
 	 * @param array $config Array consisting of the following keys:
 	 *                      consumer_key, consumer_secret, token (user_token),
@@ -81,8 +83,21 @@ class TwitterEngine extends tmhOAuth {
 		// Initialise tmhOAuth
 	    parent::__construct($this->config);
 
-	    // Verify credentials
-	    $this->validCredentials = $this->isValidAPIUser();
+	    // Setup application-only authentication in the configuration just in case they want to use it
+	    $bearerToken = $this->getBearerToken();
+	    if ($bearerToken !== FALSE) {
+		    $this->reconfigure(array_merge(
+		    	$this->config,
+		    	array(
+		    		'bearer' => $bearerToken
+		    	)
+		    ));
+		}
+
+	    // Verify credentials if they provided user-authentication
+	    if (isset($config['token']) && isset($config['secret'])) {
+	    	$this->validCredentials = $this->isValidAPIUser();
+	    }
 	}
 
 	/**
@@ -92,24 +107,43 @@ class TwitterEngine extends tmhOAuth {
 	 * @param  integer $numTweets Number of tweets to get from the timeline
 	 * @return mixed              JSON decoded array on success or FALSE on error
 	 */
-	public function getUserTimeline($user_id = null, $numTweets = 20) {
-		if (isset($user_id) && $this->validCredentials === TRUE) {
+	public function getUserTimeline($user_id = null, $authType = self::USER_AUTH, $numTweets = 20) {
+		if (isset($user_id)) {
 
-			$res = $this->request(
-				'GET', 
-				$this->url('1.1/statuses/user_timeline'), 
-				array(
+			$req = array(
+				'method'	=> 'GET', 
+				'url' 		=> $this->url('1.1/statuses/user_timeline'), 
+				'params'	=> array(
 					'user_id'		=> $user_id,
 					'count'		 	=> $numTweets
 				)
 			);
 
+			// Check we're able to connect 
+			if ($authType == self::USER_AUTH) {
+
+				if ($this->validCredentials === TRUE) {
+
+					// Authenticate as a user
+					$res = $this->user_request($req);
+				} else {
+
+					$this->logError("Unable to connect to API.");
+					return false;
+				}
+			} else {
+
+				// Authenticate as an app
+				$res = $this->apponly_request($req);
+			}
+
+			// Return the result
 			return $this->returnAPIResult($res, $this->response);
 		} else {
 
 			// No screen name provided or unable to connect to API
-			$this->logError("No user_id provided to getUserTimeline() or 
-								unable to connect to API.");
+			$this->logError("No user_id provided to getUserTimeline() or" . 
+								"unable to connect to API.");
 			return false;
 		}
 	}
@@ -120,24 +154,43 @@ class TwitterEngine extends tmhOAuth {
 	 * @param  integer $numFollowers Number to return, maximum 5000
 	 * @return mixed                 JSON decoded array on success or FALSE on error
 	 */
-	public function getUserFollowers($user_id = null, $numFollowers = 5000) {
-		if (isset($user_id) && $this->validCredentials === TRUE) {
+	public function getUserFollowers($user_id = null, $authType = self::USER_AUTH, $numFollowers = 5000) {
+		if (isset($user_id)) {
 
-			$res = $this->request(
-				'GET',
-				$this->url('1.1/followers/ids'),
-				array(
+			$req = array(
+				'method'	=> 'GET', 
+				'url' 		=> $this->url('1.1/followers/ids'), 
+				'params'	=> array(
 					'user_id'		=> $user_id,
-					'count'			=> $numFollowers
+					'count'		 	=> $numFollowers
 				)
 			);
 
+			// Check we're able to connect 
+			if ($authType == self::USER_AUTH) {
+
+				if ($this->validCredentials === TRUE) {
+
+					// Authenticate as a user
+					$res = $this->user_request($req);
+				} else {
+
+					$this->logError("Unable to connect to API.");
+					return false;
+				}
+			} else {
+
+				// Authenticate as an app
+				$res = $this->apponly_request($req);
+			}
+
+			// Return the result
 			return $this->returnAPIResult($res, $this->response);
 		} else {
 
 			// No screen name provided or unable to connect to API
-			$this->logError("No user_id provided to getUserTimeline() or 
-								unable to connect to API.");
+			$this->logError("No user_id provided to getUserFollowers() or " .
+								"unable to connect to API.");
 			return false;
 		}
 	}
@@ -148,24 +201,43 @@ class TwitterEngine extends tmhOAuth {
 	 * @param  integer $numFriends Number to return, maximum 5000
 	 * @return mixed               JSON decoded array on success or FALSE on error
 	 */
-	public function getUserFriends($user_id = null, $numFriends = 5000) {
-		if (isset($user_id) && $this->validCredentials === TRUE) {
+	public function getUserFriends($user_id = null, $authType = self::USER_AUTH, $numFriends = 5000) {
+		if (isset($user_id)) {
 
-			$res = $this->request(
-				'GET',
-				$this->url('1.1/friends/ids'),
-				array(
-					'user_id' 		=> $user_id,
-					'count'			=> $numFriends
+			$req = array(
+				'method'	=> 'GET', 
+				'url' 		=> $this->url('1.1/friends/ids'), 
+				'params'	=> array(
+					'user_id'		=> $user_id,
+					'count'		 	=> $numFriends
 				)
 			);
 
+			// Check we're able to connect 
+			if ($authType == self::USER_AUTH) {
+
+				if ($this->validCredentials === TRUE) {
+
+					// Authenticate as a user
+					$res = $this->user_request($req);
+				} else {
+
+					$this->logError("Unable to connect to API.");
+					return false;
+				}
+			} else {
+
+				// Authenticate as an app
+				$res = $this->apponly_request($req);
+			}
+
+			// Return the result
 			return $this->returnAPIResult($res, $this->response);			
 		} else {
 
 			// No screen name provided or unable to connect to API
-			$this->logError("No user_id provided to getUserTimeline() or 
-								unable to connect to API.");
+			$this->logError("No user_id provided to getUserFriends() or " . 
+								"unable to connect to API.");
 			return false;
 		}
 	}
@@ -196,23 +268,35 @@ class TwitterEngine extends tmhOAuth {
 	 * @param  integer $WOEID Where on earth identifier
 	 * @return mixed          JSON decoded array on success or FALSE on error
 	 */
-	public function getTrendingTopics($WOEID = 1) {
-		if ($this->validCredentials === TRUE) {
+	public function getTrendingTopics($WOEID = 1, $authType = self::USER_AUTH) {
+		$req = array(
+			'method'	=> 'GET', 
+			'url' 		=> $this->url('1.1/trends/place'), 
+			'params'	=> array(
+				'id' => $WOEID
+			)
+		);
 
-			$res = $this->request(
-				'GET',
-				$this->url('1.1/trends/place'),
-				array(
-					'id' => $WOEID
-				)
-			);
+		// Check we're able to connect 
+		if ($authType == self::USER_AUTH) {
 
-			return $this->returnAPIResult($res, $this->response);
+				if ($this->validCredentials === TRUE) {
+
+					// Authenticate as a user
+					$res = $this->user_request($req);
+				} else {
+
+					$this->logError("Unable to connect to API.");
+					return false;
+				}
 		} else {
 
-			$this->logError("Unable to connect to API.");
-			return false;
+			// Authenticate as an app
+			$res = $this->apponly_request($req);
 		}
+
+		// Return the result
+		return $this->returnAPIResult($res, $this->response);
 	}
 
 	/**
@@ -221,13 +305,13 @@ class TwitterEngine extends tmhOAuth {
 	 * @param  array $query Array of criteria as per twitter API parameters
 	 * @return mixed        JSON decoed array on success or FALSE on error
 	 */
-	public function search($query = null) {
-		if (is_array($query) && $this->validCredentials === TRUE) {
+	public function search($query = null, $authType = self::USER_AUTH) {
+		if (is_array($query)) {
 
-			$res = $this->request(
-				'GET',
-				$this->url('1.1/search/tweets'),
-				array_merge(
+			$req = array(
+				'method'	=> 'GET', 
+				'url' 		=> $this->url('1.1/search/tweets'), 
+				'params'	=> array_merge(
 					array(
 						'lang'		=> 'en'
 					),
@@ -235,10 +319,93 @@ class TwitterEngine extends tmhOAuth {
 				)
 			);
 
+			// Check we're able to connect 
+			if ($authType == self::USER_AUTH) {
+
+				if ($this->validCredentials === TRUE) {
+
+					// Authenticate as a user
+					$res = $this->user_request($req);
+				} else {
+
+					$this->logError("Unable to connect to API.");
+					return false;
+				}
+			} else {
+
+				// Authenticate as an app
+				$res = $this->apponly_request($req);
+			}
+
+			// Return the result
 			return $this->returnAPIResult($res, $this->response);
 		} else {
 
-			$this->logError("Unable to connect to API or no search criteria provided.");
+			$this->logError("No search criteria provided.");
+			return false;
+		}
+	}
+
+	/**
+	 * Fetch your bearer token from the Twitter API based on the consumer token and secret
+	 * @return mixed Bearer token required to access the API in application-only authentication or
+	 *                      FALSE on error
+	 */
+	public function getBearerToken() {
+		$bearer = $this->bearer_token_credentials();
+		$params = array(
+	  		'grant_type' => 'client_credentials',
+		);
+
+		// Get the bearer token
+		$code = $this->request(
+		  	'POST',
+		  	$this->url('/oauth2/token', null),
+		  	$params,
+		  	false,
+		  	false,
+		  	array(
+		    	'Authorization' => "Basic ${bearer}"
+		  	)	
+		);
+
+		// Everything ok
+		if ($code == 200) {
+
+			// Log the response
+			$this->logVerbose($this->response);
+		  	$data = json_decode($this->response['response']);
+
+		  	if (isset($data->token_type) && strcasecmp($data->token_type, 'bearer') === 0) {
+		    	
+		    	// Return the bearer token
+		    	return $data->access_token;
+		  	}
+	  	} else {
+
+	  		// Log the error
+	  		$this->logError($this->response['response']);
+	  		return false;
+	  	}
+	}
+
+	/**
+	 * Validate whether the provided API authentication details are correct
+	 * @access  private
+	 * @return  boolean TRUE on success, FALSE on error
+	 */
+	private function isValidAPIUser() {
+		$res = $this->request('GET', $this->url('1.1/account/verify_credentials'));
+
+		if ($res == 200) {
+
+			// Log verbose
+			$this->logVerbose($this->response);
+			return true;
+		} else {
+
+			// Log the error
+			$this->logError($this->response);
 			return false;
 		}
 	}
@@ -276,27 +443,6 @@ class TwitterEngine extends tmhOAuth {
 	}
 
 	/**
-	 * Validate whether the provided API authentication details are correct
-	 * @access  private
-	 * @return  boolean TRUE on success, FALSE on error
-	 */
-	private function isValidAPIUser() {
-		$res = $this->request('GET', $this->url('1.1/account/verify_credentials'));
-
-		if ($res == 200) {
-
-			// Log verbose
-			$this->logVerbose($this->response);
-			return true;
-		} else {
-
-			// Log the error
-			$this->logError($this->response);
-			return false;
-		}
-	}
-
-	/**
 	 * Log the most recent cURL error, or provided error
 	 * @param  mixed $error Optionally provide either a string for your own error
 	 *                      message or pass the array returned by cURL API calls 
@@ -305,8 +451,13 @@ class TwitterEngine extends tmhOAuth {
 	private function logError($error = null) {
 		if (isset($error)) {
 
-			// cURL error
-			if (isset($error['error']) && isset($error['errno'])) {
+			// Error is user-provided string
+			if (!is_array($error)) {
+
+				// Write string to file
+				$this->errors[] = $error . " - " . time();
+			} else if (isset($error['error']) && isset($error['errno'])) {
+				// cURL error
 
 				// In some cases this is empty and the error is in the response
 				if (empty($error['error'])) {

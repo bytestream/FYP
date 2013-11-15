@@ -1,7 +1,7 @@
 # Main DB on HUB
 CREATE USER 'twitter'@'localhost' IDENTIFIED BY  '*-H4^1b4*$P9|[h';
 CREATE DATABASE IF NOT EXISTS  `twitter` CHARACTER SET utf8 COLLATE utf8_general_ci;
-GRANT SELECT, INSERT ON `twitter` TO  'twitter'@'localhost' IDENTIFIED BY  '*-H4^1b4*$P9|[h' WITH MAX_QUERIES_PER_HOUR 0 MAX_CONNECTIONS_PER_HOUR 0 MAX_UPDATES_PER_HOUR 0 MAX_USER_CONNECTIONS 0;
+GRANT SELECT, INSERT, DELETE, LOCK TABLES ON `twitter` TO  'twitter'@'localhost' IDENTIFIED BY  '*-H4^1b4*$P9|[h' WITH MAX_QUERIES_PER_HOUR 0 MAX_CONNECTIONS_PER_HOUR 0 MAX_UPDATES_PER_HOUR 0 MAX_USER_CONNECTIONS 0;
 
 # Queue table
 CREATE TABLE IF NOT EXISTS `queue` (
@@ -27,6 +27,7 @@ CREATE TABLE IF NOT EXISTS `tweets` (
 	`user_id` bigint NOT NULL COMMENT 'Twitter User ID',
 	`tweet` varchar(140) NOT NULL,
 	`creation_date` datetime NOT NULL COMMENT 'Date the tweet was made in UTC',
+	`source` varchar(50) NOT NULL,
 	`retweeted` tinyint NOT NULL COMMENT 'Zero false, non-zero true',
 	`retweet_count` int NOT NULL,
 	PRIMARY KEY (`tweet_id`),
