@@ -9,7 +9,7 @@
 	$TwitterEngine->setVerbose(true);
 
 	// Get the current trending topics for the UK - rate limit = 1
-	if (($trending = $TwitterEngine->getTrendingTopics($TwitterEngine::$UK_WOEID)) !== FALSE) {
+	if (($trending = $TwitterEngine->getTrendingTopics($TwitterEngine::UK_WOEID)) !== FALSE) {
 
 		// Initialise array of users
 		$users = array();
