@@ -184,7 +184,7 @@
           </div>
         </header>
 
-        <section id="account" style="width: 80%; max-height: 100%; height: 100%; margin: 0 auto;">
+        <section id="account" style="width: 80%; height: 80%; margin: 0 auto;">
           <!-- Basic account details -->
           <header id="account-details" style="height: 109px; margin-bottom: 2%; display: block">
             <div class="pull-left" style="width: 60%; float: left">
