@@ -40,7 +40,7 @@
 	    	sendMail(
 	    		$_POST['email'],
 	    		"Reset password",
-	    		"Your password has been reset.\r\nE-mail address: {$_POST['email']}\r\nPassword: {$password}\r\nKind regards."
+	    		"Your password has been reset.\r\n\r\nE-mail address: {$_POST['email']}\r\nPassword: {$password}\r\n\r\nKind regards."
 	    	);
 
 	    	header("Location: login.php?reset=1");
