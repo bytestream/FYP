@@ -29,7 +29,7 @@
 
 	    	// Reset the password
 	    	$res = $DatabaseEngine->query(
-	    		"UPDATE `volunters` SET `password` = :password WHERE email = :email",
+	    		"UPDATE `volunteers` SET `password` = :password WHERE email = :email",
 	    		array(
 	    			':email'	=> $_POST['email'],
 	    			':password'	=> $hashpasswd

@@ -162,7 +162,7 @@
                   </ol>
 
                   <h3>What determines a bot?</h3>
-                  <p>Whilst we don't want to give you set criteria for determing a bot, as it should depend on your own opinions, we deal feel it would
+                  <p>Whilst we don't want to give you set criteria for determing a bot, as it should depend on your own opinions, we do feel it would
                   be beneficial to point you in the right direction. Some things you might want to look out for are:</p>
                   <ul>
                     <li>Posting malicious or spam links (please be careful if checking these)</li>
