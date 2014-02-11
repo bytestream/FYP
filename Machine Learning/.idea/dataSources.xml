@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="DataSourceManagerImpl" format="xml" hash="3428663678">
+    <data-source source="LOCAL" name="Data Source" product="MySQL" version="5.1.72-cll" jdbc-version="4.0" driver-name="MySQL Connector Java" driver-version="mysql-connector-java-5.1.29 ( Revision: alexander.soklakov@oracle.com-20140120140810-s44574olh90i6i4l )" uuid="8fa43c39-cc2d-420a-b843-d18b3646990c">
+      <extra-name-characters>#@</extra-name-characters>
+      <identifier-quote-string>`</identifier-quote-string>
+      <synchronize>true</synchronize>
+      <auto-commit>false</auto-commit>
+      <jdbc-driver>com.mysql.jdbc.Driver</jdbc-driver>
+      <jdbc-url>jdbc:mysql://87.76.31.107/findchri_twitter</jdbc-url>
+      <user-name>findchri_twitter</user-name>
+      <user-password>df80df87dfe2df9edff4df9bdfc8df9edf80df8edffadf93dfd6dff1dfc2</user-password>
+      <schema-pattern>findchri_twitter.*</schema-pattern>
+      <default-schemas>findchri_twitter.*</default-schemas>
+      <libraries>
+        <library>
+          <url>jar://$PROJECT_DIR$/libs/mysql-connector-java-5.1.29-bin.jar!/</url>
+        </library>
+      </libraries>
+    </data-source>
+  </component>
+</project>
+

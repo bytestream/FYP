@@ -1,0 +1,73 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<component name="dataSourceStorage">
+  <data-source source="LOCAL" name="Data Source" product="MySQL" version="5.1.72-cll" jdbc-version="4.0" driver-name="MySQL Connector Java" driver-version="mysql-connector-java-5.1.29 ( Revision: alexander.soklakov@oracle.com-20140120140810-s44574olh90i6i4l )" uuid="8fa43c39-cc2d-420a-b843-d18b3646990c">
+    <extra-name-characters>#@</extra-name-characters>
+    <identifier-quote-string>`</identifier-quote-string>
+    <synchronize>true</synchronize>
+    <auto-commit>false</auto-commit>
+    <jdbc-driver>com.mysql.jdbc.Driver</jdbc-driver>
+    <jdbc-url>jdbc:mysql://87.76.31.107/findchri_twitter</jdbc-url>
+    <user-name>findchri_twitter</user-name>
+    <user-password>df80df87dfe2df9edff4df9bdfc8df9edf80df8edffadf93dfd6dff1dfc2</user-password>
+    <schema-pattern>findchri_twitter.*</schema-pattern>
+    <default-schemas>findchri_twitter.*</default-schemas>
+    <libraries>
+      <library>
+        <url>jar://$PROJECT_DIR$/libs/mysql-connector-java-5.1.29-bin.jar!/</url>
+      </library>
+    </libraries>
+    <schema name="" catalog="findchri_twitter"/>
+    <table name="labels" schema="" catalog="findchri_twitter" type="TABLE">
+      <column name="id" sqlType="MEDIUMINT" length="7" precision="0" nullable="false" jdbcType="4" autoIncrement="true"/>
+      <column name="twitter_id" sqlType="BIGINT" length="19" precision="0" nullable="false" jdbcType="-5"/>
+      <column name="volunteer_id" sqlType="VARCHAR" length="255" precision="0" nullable="false" jdbcType="12"/>
+      <column name="verdict" sqlType="VARCHAR" length="255" precision="0" nullable="false" jdbcType="12"/>
+      <primary-key name="PRIMARY" columns="id"/>
+      <index name="id" unique="true" columns="id"/>
+    </table>
+    <table name="labels_consensus" schema="" catalog="findchri_twitter" type="TABLE">
+      <column name="id" sqlType="MEDIUMINT" length="7" precision="0" nullable="false" jdbcType="4" autoIncrement="true"/>
+      <column name="twitter_id" sqlType="BIGINT" length="19" precision="0" nullable="false" jdbcType="-5"/>
+      <column name="verdict" sqlType="VARCHAR" length="255" precision="0" nullable="false" jdbcType="12"/>
+      <primary-key name="PRIMARY" columns="id"/>
+    </table>
+    <table name="queue" schema="" catalog="findchri_twitter" type="TABLE">
+      <column name="user_id" sqlType="BIGINT" length="19" precision="0" nullable="false" jdbcType="-5" remarks="VHdpdHRlciBVc2VyIElEIC0gbWF4IHNpemUgNjQgYml0cw=="/>
+      <primary-key name="PRIMARY" columns="user_id"/>
+    </table>
+    <table name="rater_queue" schema="" catalog="findchri_twitter" type="TABLE">
+      <column name="twitter_id" sqlType="BIGINT" length="19" precision="0" nullable="false" jdbcType="-5"/>
+      <column name="who_checks" sqlType="VARCHAR" length="1000" precision="0" nullable="false" jdbcType="12"/>
+      <column name="total_checks" sqlType="INT" length="10" precision="0" nullable="false" jdbcType="4"/>
+    </table>
+    <table name="tweets" schema="" catalog="findchri_twitter" type="TABLE">
+      <column name="tweet_id" sqlType="BIGINT" length="19" precision="0" nullable="false" jdbcType="-5" remarks="VHdpdHRlciBUd2VldCBJRA=="/>
+      <column name="user_id" sqlType="BIGINT" length="19" precision="0" nullable="false" jdbcType="-5" remarks="VHdpdHRlciBVc2VyIElE"/>
+      <column name="tweet" sqlType="VARCHAR" length="140" precision="0" nullable="false" jdbcType="12"/>
+      <column name="creation_date" sqlType="DATETIME" length="19" precision="0" nullable="false" jdbcType="93" remarks="RGF0ZSB0aGUgdHdlZXQgd2FzIG1hZGUgaW4gVVRD"/>
+      <column name="source" sqlType="VARCHAR" length="50" precision="0" nullable="false" jdbcType="12"/>
+      <column name="retweeted" sqlType="TINYINT" length="3" precision="0" nullable="false" jdbcType="-6" remarks="WmVybyBmYWxzZSwgbm9uLXplcm8gdHJ1ZQ=="/>
+      <column name="retweet_count" sqlType="INT" length="10" precision="0" nullable="false" jdbcType="4"/>
+      <primary-key name="PRIMARY" columns="tweet_id"/>
+      <index name="user_id" unique="false" columns="user_id"/>
+    </table>
+    <table name="users" schema="" catalog="findchri_twitter" type="TABLE">
+      <column name="user_id" sqlType="BIGINT" length="19" precision="0" nullable="false" jdbcType="-5" remarks="VHdpdHRlciBVc2VyIElE"/>
+      <column name="screen_name" sqlType="VARCHAR" length="15" precision="0" nullable="false" jdbcType="12"/>
+      <column name="description" sqlType="VARCHAR" length="140" precision="0" nullable="false" jdbcType="12"/>
+      <column name="creation_date" sqlType="DATETIME" length="19" precision="0" nullable="false" jdbcType="93" remarks="RGF0ZSB0aGUgYWNjb3VudCB3YXMgbWFkZSBpbiBVVEM="/>
+      <column name="location" sqlType="VARCHAR" length="30" precision="0" nullable="true" jdbcType="12"/>
+      <column name="total_followers" sqlType="BIGINT" length="19" precision="0" nullable="false" jdbcType="-5" def="MA=="/>
+      <column name="total_friends" sqlType="BIGINT" length="19" precision="0" nullable="false" jdbcType="-5" def="MA=="/>
+      <primary-key name="PRIMARY" columns="user_id"/>
+    </table>
+    <table name="volunteers" schema="" catalog="findchri_twitter" type="TABLE">
+      <column name="volunteer_id" sqlType="INT" length="10" precision="0" nullable="false" jdbcType="4" autoIncrement="true"/>
+      <column name="email" sqlType="VARCHAR" length="255" precision="0" nullable="false" jdbcType="12"/>
+      <column name="password" sqlType="VARCHAR" length="255" precision="0" nullable="false" jdbcType="12"/>
+      <column name="last_active" sqlType="TIMESTAMP" length="19" precision="0" nullable="false" jdbcType="93" def="Q1VSUkVOVF9USU1FU1RBTVA="/>
+      <primary-key name="PRIMARY" columns="volunteer_id"/>
+      <index name="email" unique="true" columns="email"/>
+    </table>
+  </data-source>
+</component>
