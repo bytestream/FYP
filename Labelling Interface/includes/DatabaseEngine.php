@@ -22,7 +22,7 @@ class DatabaseEngine extends PDO {
 	private $stmt;
 
 	/**
-	 * Result of the previous execute() 
+	 * Result of the previous execute()
 	 * @var boolean
 	 */
 	private $_result;
@@ -44,7 +44,7 @@ class DatabaseEngine extends PDO {
 		try {
 			// Merge the options
 			$opts = array_merge(
-				$options, 
+				$options,
 				array(
 					PDO::ATTR_EMULATE_PREPARES 		=> false,
 					PDO::ATTR_ERRMODE				=> PDO::ERRMODE_EXCEPTION
@@ -144,20 +144,20 @@ class DatabaseEngine extends PDO {
 		$regex = $replacements = array();
 
 		foreach ($bind as $key => $value) {
-			if (is_string($key)) 
+			if (is_string($key))
 				$regex[] = '/:' . $key . '/';
-			else 
+			else
 				$regex[] = '/[?]/';
 
-			if (is_numeric($value)) 
+			if (is_numeric($value))
 				$replacements[] = intval($value);
-			else 
+			else
 				$replacements[] = '"' . $value . '"';
 		}
 
 		return preg_replace($regex, $replacements, $rawQuery, 1);
 	}
-	
+
 }
 
 ?>
